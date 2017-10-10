@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block body_content %}
+{% load monitor_server_tags %}
+{% for app_name,table_list_dict in site.registered_admins.items %}
+    {% for model_name,admin_class in table_list_dict.items %}
+    <table class="table table-hover">
+
+        <h3>
+            {% get_model_verbose_name admin_class%}
+        </h3>
+    </table>
+
+
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                {% if not admin_class.list_display %}
+                    <th>{{ model_name }}</th>
+                {% else %}
+                    {% for column in admin_class.list_display %}
+                    <th>{{ column }}</th>
+                    {% endfor %}
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+
+            {% for row in querysets %}
+                {% build_table_row row admin_class %}
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endfor %}
+{% endfor %}
+
+{% endblock %}
+

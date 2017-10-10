@@ -1,0 +1,30 @@
+简介：
+本项目为方便个人使用，未完全开源。目前主要采集网络流量、CPU、内存、磁盘总量及使用量，后期添加进程监控
+
+组成：
+后端使用Python3开发，框架为Django11.1，前端使用jQuery、Ajax; 使用Redis缓存客户端发送的数据，存储使用MySQL；
+
+安装：
+
+服务器端，需安装Python3.x ，Django11.1，paramiko、Redis
+客户端：程序默认将monitor_client目录发送到被监控主机的/tmp/目录下，并执行初始化程序安装所需组件。客户端默认采集ETH0网卡流量。
+
+使用：
+
+服务端默认使用MySQL存储数据，可通过修改hetrone/settings文件更改数据库类型。
+
+
+Brief introduction:
+
+This project is for personal use, not fully open source. At present, the main collection of network traffic, CPU, memory, disk volume and usage, and later add process monitoring
+
+Form：
+
+The back-end is developed using Python3, the framework is Django11.1, the front end uses jQuery and Ajax, and the data sent by the client is cached using Redis to store and use MySQL;
+Installation:
+Server side, you need to install Python3.x, Django11.1, paramiko, Redis
+Client: the program sends the monitor_client directory to the /tmp/ directory of the monitored host by default, and executes the initialization program to install the required components. The client defaults to collect ETH0 card traffic.
+
+Use：
+
+The server defaults to using MySQL to store data, and can change the database type by modifying the hetrone/settings file.

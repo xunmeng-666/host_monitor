@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+
+{% block url_titel %}
+
+{% load monitor_server_tags %}
+<div class="header">
+    <h1 class="page-header">
+        企业级主机监控系统 <small>欢迎使用</small>
+    </h1>
+
+    <ol class="breadcrumb">
+        <li><a href="/">Home</a></li>
+        <li><a href="/">Dashboard</a></li>
+        <li class="active">Data</li>
+    </ol>
+</div>
+
+{% endblock %}
+{% block body_content %}
+{% for host_info in host_ip %}{% endfor %}
+<div id="page-inner">
+<div class="row">
+    <div class="col-xs-6 col-md-3">
+        <div class="panel panel-default">
+            <div class="panel-body easypiechart-panel">
+                <h4>CPU使用率</h4>
+                <div class="easypiechart" id="easypiechart-blue" data-percent="82" >
+                    <span class="percent">{{ cpu_use_count }}%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xs-6 col-md-3">
+        <div class="panel panel-default">
+            <div class="panel-body easypiechart-panel">
+                <h4>内存使用率</h4>
+                <div class="easypiechart" id="easypiechart-orange" data-percent="55" >
+                    <span class="percent">{{ ram_use_count }}%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xs-6 col-md-3">
+        <div class="panel panel-default">
+            <div class="panel-body easypiechart-panel">
+                <h4>硬盘使用率</h4>
+                <div class="easypiechart" id="easypiechart-teal" data-percent="84" >
+                    <span class="percent">{{ disk_use_count }}%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="col-xs-6 col-md-3">
+        <div class="panel panel-default">
+            <div class="panel-body easypiechart-panel">
+                <h4>待定</h4>
+                <div class="easypiechart" id="easypiechart-blue" data-percent="82" >
+                    <span class="percent">{{ redis_data.disk_use }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{#<div class="progress" style="height: 30px" >#}
+{#    <div class="progress-bar progress-bar-success" style="width: 100%">#}
+{#        <a>磁盘总量{{ disk_total_count }}G</a>#}
+{#        <div class="progress-bar progress-bar-warning progress-bar-striped" style="width: 100px">#}
+{#            <a>磁盘使用率</a>#}
+{#        </div>#}
+{#    </div>#}
+{#</div>#}
+{#<div class="progress" style="height: 30px" >#}
+{#    <div class="progress-bar progress-bar-danger" style="width: 100%">#}
+{#        <a>内存总量{{ ram_total_count }}G</a>#}
+{#        <div class="progress-bar progress-bar-warning progress-bar-striped" style="width: 100px">#}
+{#            <a>内存使用率</a>#}
+{#        </div>#}
+{#    </div>#}
+{#</div>#}
+{#<div class="progress" style="height: 30px" >#}
+{#    <div class="progress-bar progress-bar-danger" style="width: 100%">#}
+{#        <a>内存总量</a>#}
+{#        <div class="progress-bar progress-bar-warning progress-bar-striped" style="width: 100px">#}
+{#            <a>内存使用率</a>#}
+{#        </div>#}
+{#    </div>#}
+{#</div>#}
+
+
+
+<div id="container1" style="min-width:400px;height:400px"></div>
+<div id="container" style="min-width:400px;height:400px"></div>
+{% block head %}
+    <script src="/static/echarts/echarts.min.js"></script>
+    <script src="/static/echarts/highcharts.js"></script>
+{% endblock %}
+<script >
+    var chart = new Highcharts.Chart('container1', {// 图表初始化函数，其中 container 为图表的容器 div
+    chart: {
+        type: 'area'                           //指定图表的类型，默认是折线图（line）
+    },
+    title: {
+            text: '主机流量图'
+        },
+        legend: {
+            layout: 'vertical',
+            align: 'left',
+            verticalAlign: 'top',
+            x: 150,
+            y: 100,
+            floating: true,
+            borderWidth: 1,
+            backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'
+        },
+        xAxis: {
+            categories: [
+                '周一',
+                '周二',
+                '周三',
+                '周四',
+                '周五',
+                '周六',
+                '周日'
+            ],
+            plotBands: [{ // visualize the weekend
+                from: 4.5,
+                to: 6.5,
+                color: 'rgba(68, 170, 213, .2)'
+            }]
+        },
+        yAxis: {
+            title: {
+                text: 'M 单位'
+            }
+        },
+        tooltip: {
+            shared: true,
+            valueSuffix: ' M'
+        },
+        credits: {
+            enabled: false
+        },
+        plotOptions: {
+            areaspline: {
+                fillOpacity: 0.5
+            }
+        },
+
+        series: [
+        {% for ip_addr in monitor_info %}
+            {
+
+            name: '{{ ip_addr.hostname.ip_address }}',
+            data: {{ input_data }}
+            },
+        {% endfor %}
+        ]
+    });
+</script>
+<script>
+    var host_chart = new Highcharts.Chart('container', {
+        chart: {
+            plotBackgroundColor: null,
+            plotBorderWidth: null,
+            plotShadow: false
+        },
+        title: {
+            text: 'CPU使用率'
+        },
+        tooltip: {
+            headerFormat: '{series.name}<br>',
+            pointFormat: '{point.name}: <b>{point.percentage:.1f}%</b>'
+        },
+        plotOptions: {
+            pie: {
+                allowPointSelect: true,
+                cursor: 'pointer',
+                dataLabels: {
+                    enabled: true,
+                    format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+                    style: {
+                        color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+                    }
+                }
+            }
+        },
+        series: [{
+
+            type: 'pie',
+            name: '主机CPU使用占比例',
+            data: [
+                {% for ip_addr in monitor_info %}
+            {
+
+            name: '{{ ip_addr.hostname.ip_address }}',
+            data: {{ input_data }}
+            },
+        {% endfor %}
+            ]
+        }]
+    });
+
+</script>
+
+
+</div>
+    <!-- /. PAGE INNER  -->
+
+
+{% endblock %}
+

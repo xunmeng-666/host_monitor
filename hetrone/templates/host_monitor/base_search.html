@@ -1,0 +1,44 @@
+{% load monitor_server_tags %}
+<form >
+    <div class="row">
+
+        <div class="col-sm-1">
+            <a href="/host_add/{{ app_name }}/{{ model_name }}" class="btn btn-sm btn-primary">Add {% get_model_verbose_name admin_class %}</a>
+        </div>
+        <div class="col-xs-7"></div>
+
+        <div class="row">
+            <div class="col-lg-3">
+                <input type="search" name="_q" value="{% if q_val %}{{ q_val }}{% endif %}" placeholder="search{% for s_field in admin_class.search_fields%} {% endfor %}" class="form-control">
+            </div>
+
+        </div>
+    </div>
+</form>
+
+{% block table_content %}
+
+{% endblock %}
+<div class="pagination">
+    <ul class="pagination">
+        <li class=""><a href="?_page=1{{ filter_condtions_string }}">首页 </a></li>
+        {% for p in paginator.page_range %}
+            {% get_abs_value p  querysets.number as i %} <!--i变量是当前页与循环的次数的差的绝对值 -->
+
+             {% if i < 3 %}
+                {% if p == querysets.number %}
+                    <li class="active"><a href="?_page={{ p }}{{ filter_condtions_string }}&_o={{ last_orderby_key }}">{{ p }} <span class="sr-only">(current)</span></a></li>
+                {% else %}
+                    <li class=""><a href="?_page={{ p }}{{ filter_condtions_string }}&_o={{ last_orderby_key }}">{{ p }} <span class="sr-only">(current)</span></a></li>
+
+                {% endif %}
+            {% endif %}
+        {% endfor %}
+        <li class="">
+            <a href="?_page={{ paginator.num_pages }}{{ filter_condtions_string }}&_o={{ last_orderby_key }}">尾页</a>
+        </li>
+        <li class="">
+            <a>总计 {{ querysets.paginator.num_pages }}页</a>
+        </li>
+    </ul>
+</div>

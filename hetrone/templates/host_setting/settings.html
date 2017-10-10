@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+{% block body_content %}
+{% load monitor_server_tags %}
+<div>
+    <div class="ibox-title">
+        <h3>系统设置</h3>
+        <p></p>
+    </div>
+    <ul class="nav nav-tabs">
+        <li role="presentation"  class="active"><a href="#">邮件设置</a></li>
+        <li role="presentation"  data-toggle="modal" data-target="#exampleModal" data-whatever="@mdo"><a href="#">报警设置</a></li>
+        <li role="presentation"  data-toggle="modal" data-target="#exampleModal" data-whatever="@fat"><a href="#">Messages</a></li>
+    </ul>
+
+    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="exampleModalLabel">报警设置</h4>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="form-group">
+                            <label for="recipient-name" class="control-label">Recipient:</label>
+                            <input type="text" class="form-control" id="recipient-name">
+                        </div>
+                        <div class="form-group">
+                            <label for="message-text" class="control-label">Message:</label>
+                            <textarea class="form-control" id="message-text"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Send message</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <form class="form-horizontal">
+    <p></p>
+        {% for colum in admin_class.list_display %}
+{#            {{ colum }}#}
+            {% if colum == '密码' %}
+                <div class="form-group">
+                    <label for="inputEmail3" class="col-sm-2 control-label">{{ colum }}</label>
+                    <div class="col-sm-10">
+                        <input type="password" class="form-control" name="{{ colum }}" placeholder="{{ colum }}">
+                    </div>
+                </div>
+            {% elif colum == 'SSL' %}
+                <div class="form-group">
+                    <label for="inputEmail3" class="col-sm-2 control-label">{{ colum }}</label>
+                    <div class="col-sm-10">
+                        <input type="checkbox" onclick="ssl(this)" class="form-control" name="{{ colum }}">
+                    </div>
+                </div>
+            {% elif colum == 'TLS' %}
+                <div class="form-group">
+                    <label for="inputEmail3" class="col-sm-2 control-label">{{ colum }}</label>
+                    <div class="col-sm-2">
+                        <input type="checkbox" class="form-control" name="{{ colum }}"
+                               title="如果服务器支持，请使用TLS加密传输">
+                    </div>
+                </div>
+            {% elif colum == '端口' %}
+                <div class="form-group">
+                    <label for="inputEmail3" class="col-sm-2 control-label">{{ colum }}</label>
+                    <div class="col-sm-10">
+                        <input type="text" id="ssl_port" class="form-control" name="{{ colum }}" value="25">
+                    </div>
+                </div>
+            {% else %}
+                <div class="form-group">
+                    <label for="inputEmail3" class="col-sm-2 control-label">{{ colum }}</label>
+                    <div class="col-sm-10">
+                        <input type="email" class="form-control" name="{{ colum }}" placeholder="{{ colum }}">
+                    </div>
+                </div>
+            {% endif %}
+
+        {% endfor %}
+        <div class="row">
+\            <a id="save" class="save col-md-offset-11 btn-primary btn">保存</a>
+        </div>
+    </form>
+
+</div>
+
+<script>
+    function ssl(self) {
+
+        if ( $(self).prop('checked')){
+                console.log('465');
+                document.getElementById('ssl_port').value='465';
+            }else {
+                document.getElementById('ssl_port').value='25';
+            }
+    }
+
+
+    $(".save").click(function () {
+        console.log('123');
+        $.ajax({
+            url: "/sys_settings/",
+            type: "post",
+            data: "{'account':'账号','password':'密码','send_mail':'发件服务器','ssl':'SSL','port':'端口','tls':'TLS','rcpt':'收件人'}",
+            success: function (data) {
+                var data_dict = JSON.parse(data);
+                var status = conn_status.eq(6);
+                if (data_dict.status) {
+                    alert('邮件设置成功')
+                } else {
+                    alert('邮件设置失败')
+                }
+            }
+        })
+    })
+
+
+
+</script>
+
+
+
+{% endblock %}

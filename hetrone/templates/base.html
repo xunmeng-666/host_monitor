@@ -1,0 +1,247 @@
+
+
+<!DOCTYPE html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<meta content="" name="description" />
+    <meta content="webthemez" name="author" />
+    <title>企业级主机监控系统</title>
+    <script src="/static/echarts/highcharts.js"></script>
+    <!-- Bootstrap Styles-->
+    <link href="/static/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="/static/assets/css/bootstrap.css" rel="stylesheet" />
+    <link href="/static/assets/css/bootstrap-theme.min.css" rel="stylesheet" />
+{#    <link rel="stylesheet" href="/static/bootstrap/css/bootstrap.css">#}
+{#    <link rel="stylesheet" href="/static/bootstrap/css/bootstrap-theme.css">#}
+    <!-- FontAwesome Styles-->
+    <link href="/static/assets/css/font-awesome.css" rel="stylesheet" />
+    <!-- Morris Chart Styles-->
+    <link href="/static/assets/js/morris/morris-0.4.3.min.css" rel="stylesheet" />
+    <!-- Custom Styles-->
+    <link href="/static/assets/css/custom-styles.css" rel="stylesheet" />
+    <!-- Google Fonts-->
+    <link rel="stylesheet" href="/static/assets/js/Lightweight-Chart/cssCharts.css">
+
+</head>
+
+
+<body onload="conn_status()">
+{% load monitor_server_tags %}
+{% block body %}{% endblock %}
+    <div  id="wrapper">
+        <nav class="navbar navbar-default top-navbar" role="navigation">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="/"><strong><i class="glyphicon glyphicon-home"></i> 首页</strong></a>
+                <div id="sideNav" href="">
+                    <i class="fa fa-bars icon"></i>
+                </div>
+            </div>
+
+            <div class="container right">
+                <a href="#" class="dropdown text-right "id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true" style="margin: 0px 10px auto 5px;position: absolute;width: 73%;">
+                    <img src="/static/image/user.png" style="width: 5%;height: 100%;" class="right">{{ request.user.name }}
+                    <span class="caret"></span>
+                </a>
+
+                <ul class="dropdown-menu dropdown-menu-right">
+                    <li><a href="#">个人信息</a></li>
+                    <li><a href="#" data-toggle="modal" data-target="#myModal">修改密码</a></li>
+                    <li><a href="/accounts/logout/">退出</a></li>
+                </ul>
+            </div>
+        </nav>
+{#        <form action="/change_password/" method="post">{% csrf_token %}#}
+{#        </form>#}
+        <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="myModalLabel">修改密码</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">当前用户：</label>
+                            <div class="col-sm-7">{{ request.user }}</div>
+                        </div>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">旧密码：</label>
+                            <div class="col-sm-7">
+                                    <input type="password" name="old_password" class="form-control" id="old_password">
+                                <span style="color:gray;font-size: 10px"></span>
+                              <span style="color: red">  </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label class="col-sm-3">新密码：</label>
+                            <div class="col-sm-7">
+                                    <input type="password" name="new_password" class="form-control" required="" id="new_password">
+                                <span style="color:gray;font-size: 10px"></span>
+                              <span style="color: red">  </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">重新输入：</label>
+                            <div class="col-sm-7">
+                                    <input type="password" name="re_password" class="form-control" required="" id="re_password">
+                                <span style="color:gray;font-size: 10px"></span>
+                              <span style="color: red">  </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-body"></div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                        <input id="save" type="button" class="btn btn-primary" value="保存" />
+        {#                        <button type="submit" id="save" class="btn btn-primary">保存</button>#}
+                    </div>
+                    <script src="/static/assets/js/jquery.js"></script>
+                    <script>
+                        $(function () {
+                            bindBtn();
+                        });
+
+                        function bindBtn() {
+                            $('#save').click(function () {
+                                console.log('点击1');
+                                var p = $("#old_password").val();
+                                console.log('点击2');
+                                var new_p = $("#new_password").val();
+                                console.log('点击3');
+                                var re_p = $("#re_password").val();
+                                console.log('点击4');
+                                $.ajax({
+{#                                    header:{"X-CSRFToken":$.cookie('csrftoken')},#}
+                                    url: '/change_password/',
+                                    type: "POST",
+                                    data: {pwd:p,new_pwd:new_p,re_pwd:re_p},
+
+                                    success:function (data) {
+                                        console.log('点击5');
+                                        var data_dict = JSON.parse(data);
+                                        if(data_dict.status){
+                                            alert('密码修改成功,即将重新登录系统');
+                                            location.href = "/"
+                                        }else{
+                                            alert(data_dict.error);
+                                        }
+                                    }
+                                })
+
+                            })
+                        }
+                    </script>
+                </div>
+            </div>
+        </div>
+
+        <!--/. NAV TOP  -->
+
+        <nav class="navbar-default navbar-side" role="navigation">
+            <div class="sidebar-collapse">
+                <ul class="nav" id="main-menu">
+                    <li>
+                        <a class="active-menu" href="/"><i class="fa fa-dashboard"></i>视图</a>
+                    </li>
+                    <li>
+                        <a href="/host_monitor_list/"><i class="fa fa-desktop"></i>主机监控</a>
+                    </li>
+                    <li>
+                        <a href="#"><i class="fa fa-sitemap"></i>主机管理<span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level">
+                            <li>
+                                <a href="/host_list/">主机列表</a>
+                            </li>
+                            <li>
+                                <a href="/host_group/">主机组</a>
+                            </li>
+                            <li>
+                                <a href="/idc/">IDC</a>
+                            </li>
+                        </ul>
+                     </li>
+
+                    <li>
+                        <a href="/inform/"><i class="fa fa-table"></i>通知</a>
+                    </li>
+                    <li>
+                        <a href="/form/"><i class="fa fa-edit"></i>报警 </a>
+                    </li>
+
+
+                    <li>
+                        <a href="#"><i class="glyphicon glyphicon-cog"></i>设置<span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level">
+                            <li>
+                                <a href="/host_user/">用户设置</a>
+                            </li>
+                            <li>
+                                <a href="/sys_settings/">系统设置</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="empty.html"><i class="fa fa-fw fa-file"></i>报表</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- /. NAV SIDE  -->
+
+		<div id="page-wrapper">
+        {% block url_titel %}
+
+        {% endblock %}
+            <div id="page-inner">
+
+                <!-- /. ROW  -->
+
+
+
+		{% block body_content %}{% endblock %}
+        <!-- /. PAGE WRAPPER  -->
+            </div>
+        </div>
+    </div>
+    <!-- /. WRAPPER  -->
+    <!-- JS Scripts-->
+    <!-- jQuery Js -->
+    <script src="/static/assets/js/jquery.min.js"></script>
+
+
+    <!-- Bootstrap Js -->
+    <script src="/static/assets/js/bootstrap.min.js"></script>
+
+    <!-- Metis Menu Js -->
+    <script src="/static/assets/js/jquery.metisMenu.js"></script>
+    <!-- Morris Chart Js -->
+    <script src="/static/assets/js/morris/raphael-2.1.0.min.js"></script>
+{#    <script src="/static/assets/js/morris/morris.js"></script>#}
+
+
+	<script src="/static/assets/js/easypiechart.js"></script>
+	<script src="/static/assets/js/easypiechart-data.js"></script>
+
+	 <script src="/static/assets/js/Lightweight-Chart/jquery.chart.js"></script>
+
+    <!-- Custom Js -->
+    <script src="/static/assets/js/custom-scripts.js"></script>
+
+
+    <!-- Chart Js -->
+    <script type="text/javascript" src="/static/assets/js/Chart.min.js"></script>
+    <script type="text/javascript" src="/static/assets/js/chartjs.js"></script>
+
+    {% block bottom-js %}{% endblock %}
+</body>
+
+</html>

@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+
+{% block body_content %}
+{% load monitor_server_tags %}
+    {% include 'host_monitor/object_change_form.html' %}
+{% endblock %}

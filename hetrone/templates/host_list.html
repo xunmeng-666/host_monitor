@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+
+{% block body_content %}
+{% load monitor_server_tags %}
+    {% get_filter_condtions_string filter_conditions q_val as  filter_condtions_string %}
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="ibox float-e-margins" id="all">
+                <div class="ibox-title">
+                    <h3> {% get_model_verbose_name admin_class%}</h3>
+                    <p></p>
+                </div>
+
+                <form >
+                    <div class="row">
+
+                        <div class="col-sm-1">
+                            <a href="/host_add/{{ app_name }}/{{ model_name }}" class="btn btn-sm btn-primary">Add {% get_model_verbose_name admin_class %}</a>
+                        </div>
+                        <div class="col-xs-7"></div>
+
+                        <div class="row">
+                            <div class="col-lg-3">
+                                <input type="search" name="_q" value="{% if q_val %}{{ q_val }}{% endif %}" placeholder="主机名 IP地址{% for s_field in admin_class.search_fields%} {% endfor %}" class="form-control">
+                            </div>
+
+                        </div>
+                    </div>
+                </form>
+
+                <form method="post" onsubmit="return FormVerification(this)">{% csrf_token %}
+                    <table class="table table-hover">
+                    <table class="table table-striped table-bordered table-hover ">
+                        <thead>
+                            <tr>
+                                {% if not  admin_class.list_display %}
+                                    <th>{{ model_name }}</th>
+                                {% else %}
+                                    <th class='text-center'>
+                                        <input  onclick="checkAll(this)" type="checkbox">
+                                    </th>
+                                    {% for column in admin_class.list_filter %}
+                                    <th class='text-center'>
+                                    {% if order_column == column  %}
+                                        {{ order_column }}
+                                    {% else %}
+                                         {{ column }}
+                                    {% endif %}
+                                    </th>
+                                    {% endfor %}
+                                    <th class='text-center'>连接状态</th>
+                                    <th class='text-center'>操作</th>
+                                {% endif %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <form method="post">
+                                {% for row in querysets %}
+                                    <tr class='gradeX' id='checkbox'>
+                                        {% build_table_row row admin_class app_name model_name %}
+                                        <form method='post'>
+                                            {% csrf_token %}
+                                            <div>
+{#                                                <td id='conn-status' class='text-center' data-editable='false'>#}
+{##}
+{#                                                </td>#}
+                                                {% get_enable_objects row app_name model_name admin_class%}
+                                            </div>
+                                        </form>
+                                    </tr>
+                                {% endfor %}
+
+                            </form>
+                        </tbody>
+                    </table>
+                </table>
+                <div class="col-sm-10">
+                    <tr>
+                        <td><input id="host_conn" type='button' class='btn btn-sm btn-warning' value='连接' /></td>
+                        <td><input onclick="btn_del(this) "  type='button' class='btn btn-danger btn-sm' value='删除' /></td>
+                    </tr>
+                </div>
+                </form>
+
+
+                <div class="pagination">
+                    <ul class="pagination">
+                        <li class=""><a href="?_page=1{{ filter_condtions_string }}">首页 </a></li>
+                        {% for p in paginator.page_range %}
+                            {% get_abs_value p  querysets.number as i %} <!--i变量是当前页与循环的次数的差的绝对值 -->
+
+                             {% if i < 3 %}
+                                {% if p == querysets.number %}
+                                    <li class="active"><a href="?_page={{ p }}{{ filter_condtions_string }}&_o={{ last_orderby_key }}">{{ p }} <span class="sr-only">(current)</span></a></li>
+                                {% else %}
+                                    <li class=""><a href="?_page={{ p }}{{ filter_condtions_string }}&_o={{ last_orderby_key }}">{{ p }} <span class="sr-only">(current)</span></a></li>
+
+                                {% endif %}
+                            {% endif %}
+                        {% endfor %}
+                        <li class="">
+                            <a href="?_page={{ paginator.num_pages }}{{ filter_condtions_string }}&_o={{ last_orderby_key }}">尾页</a>
+                        </li>
+                        <li class="">
+                            <a>总计 {{ querysets.paginator.num_pages }}页</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+<script>
+
+        function checkAll(self) {
+            if ( $(self).prop('checked')){
+
+                $("table .row-obj").prop('checked',true)
+            }else {
+                 $("table .row-obj").prop('checked',false)
+            }
+
+        }
+
+
+
+        function btn_del(self) {
+            console.log('删除');
+            var check=document.getElementsByName('_selected_obj');
+            var len = check.length;
+            var idAll="";
+            for (var i =0;i<len;i++){
+                console.log('循环中');
+                if(check[i].checked){
+                    console.log(check[i]);
+                    idAll += check[i].value+",";
+                }
+            }
+            window.location.href="/host_auto_del/{{ app_name }}/{{ model_name }}/?idAll="+idAll;
+        }
+
+        $(".conn").click(function () {
+           var conn_status=$(this).closest('tr').find('td');
+           console.log($(conn_status).eq(3).text());
+           var td_id = $(conn_status).eq(1).text();
+           console.log($(td_id));
+           conn_status.eq(6).find('a').remove();
+           conn_status.eq(6).append("<a style='color: #B88B21'>连接中</a>");
+
+           $.ajax({
+               url:"/host_conn/{{ app_name }}/{{ model_name }}/"+td_id+'/',
+               type:'post',
+               success:function (data) {
+                   var data_dict = JSON.parse(data);
+                   var status = conn_status.eq(6);
+                   if(data_dict.status){
+                       status.find('a').remove();
+                       status.append("<a style='color:#1CD61C'> 已连接 </a>");
+                       $(get_redis(status,td_id));
+                   }else{
+                       status.find('a').remove();
+                       status.append("<a style='color:red'> 连接失败 </a>");
+                   }
+               }
+           })
+        });
+
+        function get_redis(status,td_id) {
+            console.log('get_redis');
+            status.find('a').remove();
+            status.append("<a style='color:#1CD61C'> 获取主机数据中... </a>");
+            $.ajax({
+                url:"/get_redis_data/{{ app_name }}/{{ model_name }}/" + td_id,
+                success:function (data) {
+                    var data_dict = JSON.parse(data);
+                    if(data_dict.status){
+                        alert('主机数据获取成功，请跳转至监控页面查看详情');
+                    }else {
+                        alert('主机数据获取失败','错误状态:'+data_dict.status);
+                    }
+                }
+            })
+        }
+
+        $("#host_conn").click(function() {
+
+            var check=document.getElementsByName('_selected_obj');
+            var len = check.length;
+            var idAll="";
+            for (var i =0;i<len;i++){
+                console.log('循环中');
+                if(check[i].checked){
+                    var tk = check[i];
+                    $(tk.closest('tr')).find('td').eq(6).find('a').remove();
+                    $(tk.closest('tr')).find('td').eq(6).append("<a style='color: #B88B21'>连接中</a>");
+                    idAll += check[i].value+",";
+
+                }
+            }
+            $.ajax({
+                url:"/host_auto_conn/{{ app_name }}/{{ model_name }}/?idAll="+idAll,
+                type:"post",
+                success:function (data) {
+
+                    var data_dict = JSON.parse(data);
+                    var tkd = $(tk.closest('tr')).find('td').eq(6);
+                    if(data_dict.status){
+                        tkd.find('a').remove();
+                        tkd.append("<a style='color:#1CD61C'> 已连接 </a>");
+                    }else{
+                        tkd.find('a').remove();
+                        tkd.append("<a style='color:red'> 连接失败 </a>");
+                    }
+                }
+
+            });
+        });
+
+
+    </script>
+
+{% endblock %}
+
+

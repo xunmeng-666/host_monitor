@@ -1,0 +1,108 @@
+{% load monitor_server_tags %}
+
+<div class="container">
+        <ol class="breadcrumb">
+              <li><a href="/">Home</a></li>
+              <li ><a href="/{{ app_name }}/">{{ app_name }}</a></li>
+              <li ><a href="/{{ app_name }}/{{ model_name }}/">{{ model_name }}</a></li>
+              <li class="active">{% if  form_obj.instance.id %}{{ form_obj.instance }}{% else %}添加{{ model_name }}{% endif %}</li>
+        </ol>
+        {{ form_obj.errors }}
+        <form class="form-horizontal" method="post">{% csrf_token %}
+            {% for field in form_obj %}
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">
+                        {% if field.field.required %}
+                            {{ field.name }}
+                        {% else %}
+                            <span style="font-weight: normal">{{ field.name }}</span>
+                        {% endif %}
+                    </label>
+                    <div class="col-sm-7">
+                        {% if field.name in admin_class.list_filter %}
+                            <div >
+                                {% get_selected_m2m_objects form_obj field.name as selected_m2m_objects %}
+
+                                {% get_m2m_objects admin_class field.name selected_m2m_objects as m2m_objects  %}
+                                <div class="col-lg-5">
+                                    <input oninput="FuzzySearch(this)" type="search" class="form-control">
+                                    <select  id="{{ field.name }}_from"  multiple class="form-control">
+                                        {% for obj in m2m_objects %}
+                                            <option ondblclick="MoveElementTo(this,'{{ field.name }}_to','{{ field.name }}')" value="{{ obj.id }}">{{ obj }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-lg-5">
+                                    <select ele-type="right-select-ele" name="{{ field.name }}" id="{{ field.name }}_to" multiple class="form-control">
+                                        {% for obj in selected_m2m_objects %}
+                                            <option ondblclick="MoveElementTo(this,'{{ field.name }}_from','{{ field.name }}')"  value="{{ obj.id }}">{{ obj }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        {% else %}
+                            {{ field }}
+                        {% endif %}
+                        <span style="color:gray;font-size: 10px">{{ field.help_text }}</span>
+                      <span style="color: red">{{ field.errors.0 }}  </span>
+                    </div>
+                </div>
+            {% endfor %}
+            <div class="form-group">
+                <div class="col-sm-1 col-lg-offset-8">
+                    <input type="submit" href="/host_list/" onclick="SelectAllm2mElements()" class="btn btn-info" value="保存">
+                </div>
+            </div>
+        </form>
+
+
+
+
+    </div>
+
+<script>
+    $('#id_enabled').click(function(){
+        console.log('enable');
+    });
+
+    function MoveElementTo(self,target_id,field_name) {
+        console.log(self,target_id);
+        $("#"+target_id).append($(self));
+        //console.log($(self) )
+        //$(self).off("dblclick");
+        $(self).removeAttr("ondblclick")
+        $(self).dblclick(
+            function () {
+                if (target_id == field_name+'_to'){
+                    MoveElementTo(self,field_name+'_from',field_name)
+                }else {
+                     MoveElementTo(self,field_name+'_to',field_name)
+                }
+
+            }
+        );//end js bound
+
+    }
+
+    function SelectAllm2mElements() {
+        $("select[ele-type='right-select-ele'] option").prop("selected",true);
+    }
+
+    function FuzzySearch(self) {
+        var select_ele = $(self).next()
+        console.log($(self).val());
+        var search_text = $(self).val()
+        $(select_ele).children().each(function () {
+            //console.log($(this).text());
+            if ($(this).text().indexOf(search_text) == -1){ //not matches
+                console.log('not match',$(this).text())
+                $(this).css('color','black');
+
+            }else {
+                $(this).removeClass('hidden');
+                $(this).css('color','red');
+            }
+        })
+
+    }
+</script>

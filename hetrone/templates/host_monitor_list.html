@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block body_content %}
+{% load monitor_server_tags %}
+
+<h3>主机监控列表</h3>
+<p></p>
+
+<div class="panel panel-default">
+    <div class="panel-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered table-hover">
+                <thead>
+                    <tr>
+                        {% for val in admin_class.list_display %}
+                            <th>{{ val }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        {% get_hostinfo_obj monitor_id %}
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+<script type="text/javascript">
+    setTimeout(function(){
+        var data = new Date;
+
+        window.location.reload();
+    },5000); //自动刷新
+</script>
+{% endblock %}
+
