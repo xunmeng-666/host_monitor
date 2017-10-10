@@ -18,6 +18,7 @@
    3. python3 manage.py migrate
    以前完成数据初始化操作。 
    4. python3 manage.py run 启动项目，默认使用8001端口
+   5. python3 manage.py createsuperuser 创建管理员用户。
 
 
 Brief introduction:
@@ -41,3 +42,4 @@ Initialize database:
 3. python3 manage.py migrate
 Perform data initialization before.
 4. python3 manage.py run startup project, using port 8001 by default
+5. python3 manage.py createsuperuser  create admin user
