@@ -12,6 +12,12 @@
 使用：
 
 服务端默认使用MySQL存储数据，可通过修改hetrone/settings文件更改数据库类型。
+初始化数据库：
+   1. 进入hetrone目录，
+   2. python3 manage.py makemigrations
+   3. python3 manage.py migrate
+   以前完成数据初始化操作。 
+   4. python3 manage.py run 启动项目，默认使用8001端口
 
 
 Brief introduction:
@@ -28,3 +34,10 @@ Client: the program sends the monitor_client directory to the /tmp/ directory of
 Use：
 
 The server defaults to using MySQL to store data, and can change the database type by modifying the hetrone/settings file.
+
+Initialize database:
+1. enter the hetrone directory,
+2. python3 manage.py makemigrations
+3. python3 manage.py migrate
+Perform data initialization before.
+4. python3 manage.py run startup project, using port 8001 by default
